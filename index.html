@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <!-- Use custom A-Frame build until this gets merged in https://github.com/aframevr/aframe/pull/5040 -->
+    <!-- <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script> -->
+    <script src="lib/aframe-master.js"></script>
+    <script src="https://unpkg.com/aframe-environment-component@1.3.1/dist/aframe-environment-component.min.js"></script>
+    <!-- Start PhysX imports. My own modified PhysX build + components from Zach's VARTISTE toolkit. -->
+    <script src="lib/physx.release.js"></script>
+    <script src="lib/physics.js"></script>
+    <!-- End PhysX imports -->
+    <script src="index.js"></script>
+    <title>Hexabody</title>
+  </head>
+  <body>
+    <a-scene physx="autoLoad: true; wasmUrl: lib/physx.release.wasm; delay: 1000">
+      <a-entity environment="preset: default"></a-entity>
+      <a-box physx-body="type: static" position="0 0.5 -2" color="#222"></a-box>
+      <!-- Camera Rig START -->
+      <a-entity id="trackedHeadOffset">
+        <a-camera id="trackedHead"></a-camera>
+      </a-entity>
+      <a-entity id="cameraRig">
+        <a-entity id="trackedLeftHand" tracked-controls="hand: left; space: gripSpace"></a-entity>
+        <a-entity id="trackedRightHand" tracked-controls="hand: right; space: gripSpace"></a-entity>
+      </a-entity>
+      <!-- Camera Rig END -->
+      <!-- Hexabody START
+        Collision Groups:
+        1 - Body (Locomotion Sphere, Fender, Pelvis)
+        2 - Hands
+        3 - Head
+      -->
+      <a-entity id="hexabody" hexabody="">
+        <a-sphere id="head"
+                  physx-body="type: dynamic; mass: 5; angularLockFlags: x, y, z"
+                  physx-material="collisionLayers: 3; collidesWithLayers: 1 3"
+                  radius=".5"
+                  position="0 .675 .12"
+                  scale=".2 .2 .2">
+          <a-entity id="spine"
+                    physx-joint="type: D6; target: #pelvis"
+                    physx-joint-constraint="lockedAxes: x, y, z, twist, swing2; freeAxes: swing1"></a-entity>
+          <a-entity id="leftHandJoint"
+                    physx-joint="type: D6; target: #leftHand"
+                    physx-joint-driver="axes: x, y, z, twist, swing; stiffness: 3000; damping: 50"
+                    physx-joint-constraint="freeAxes: x, y, z, twist, swing"></a-entity>
+          <a-entity id="rightHandJoint"
+                    physx-joint="type: D6; target: #rightHand"
+                    physx-joint-driver="axes: x, y, z, twist, swing; stiffness: 3000; damping: 50"
+                    physx-joint-constraint="freeAxes: x, y, z, twist, swing"></a-entity>
+        </a-sphere>
+        <a-sphere id="leftHand"
+                  physx-body="type: dynamic; mass: 2"
+                  physx-material="collisionLayers: 2; collidesWithLayers: 1 2; staticFriction: 10; dynamicFriction: 10"
+                  radius=".5"
+                  position="-.2 .675 .12"
+                  scale=".1 .1 .1"></a-entity>
+        <a-sphere id="rightHand"
+                  physx-body="type: dynamic; mass: 2"
+                  physx-material="collisionLayers: 2; collidesWithLayers: 1 2; staticFriction: 10; dynamicFriction: 10"
+                  radius=".5"
+                  position=".2 .675 .12"
+                  scale=".1 .1 .1"></a-sphere>
+        <a-cylinder id="pelvis"
+                    physx-body="type: dynamic; mass: 10; angularLockFlags: x, y, z"
+                    physx-material="collisionLayers: 1; collidesWithLayers: 2 3; collisionGroup: 1"
+                    height="1"
+                    radius=".5"
+                    position="0 .175 0"
+                    scale=".2 .3 .2"></a-cylinder>
+        <a-sphere id="fender" 
+                  physx-body="type: dynamic; mass: 5; angularLockFlags: x, y, z" 
+                  physx-material="collisionLayers: 1; collidesWithLayers: 2 3; collisionGroup: 1"
+                  scale="0.35 0.35 0.35"
+                  radius="0.5"
+                  position="0 .175 0">
+          <a-entity id="sphereJoint" 
+                    position="0 -.5 0"
+                    physx-joint="type: D6; target: #locomotionSphere;" 
+                    physx-joint-constraint="lockedAxes: x, y, z; freeAxes: twist, swing"></a-entity>
+          <a-entity id="pelvisJoint" 
+                    physx-joint="type: D6; target: #pelvis" 
+                    physx-joint-constraint__1="lockedAxes: x, z, twist, swing2; freeAxes: swing1"
+                    physx-joint-constraint__2="constrainedAxes: y; linearLimit: 0 1.05"
+                    physx-joint-driver="axes: y; stiffness: 5000; damping: 50"></a-entity>
+        </a-sphere>
+        <a-sphere id="locomotionSphere" 
+                  physx-body="type: dynamic; mass: 5;" 
+                  physx-material="collisionLayers: 1; collidesWithLayers: 2 3; collisionGroup: 1; staticFriction: 10; dynamicFriction: 10"
+                  scale="0.3 0.3 0.3"
+                  radius="0.5"
+                  position="0 0 0"></a-sphere>
+      </a-entity>
+      <!-- Hexabody END -->
+    </a-scene>
+  </body>
+</html>
