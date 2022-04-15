@@ -106,7 +106,7 @@ AFRAME.registerComponent('hexabody', {
   tick: function (time, timeDelta) {
     if (!this.physicsStarted) return;
     
-    //this.cameraToPlayer();
+    this.cameraToPlayer();
     this.cameraRigToPlayer();
     this.getControllerInput();
 
